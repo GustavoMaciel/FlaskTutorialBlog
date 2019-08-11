@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flaskblog.models import User
 from flask_login import current_user
@@ -59,3 +59,8 @@ class UpdateAccountForm(FlaskForm):
             if user and user != current_user:
                 raise ValidationError('The email is already taken')
 
+
+class PostForm(FlaskForm):
+    title = StringField("Title", validators=common_validators)
+    content = TextAreaField('Content', validators=common_validators)
+    submit = SubmitField('Post')
