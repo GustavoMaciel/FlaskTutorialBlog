@@ -1,7 +1,7 @@
-from flaskblog import db, login_manager, app
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from datetime import datetime
 from flask_login import UserMixin
+from itsdangerous import Serializer
+from flask import current_app
+from flaskblog import login_manager, db
 
 
 @login_manager.user_loader
@@ -18,12 +18,12 @@ class User(db.Model, UserMixin):
     posts = db.relationship('Post', backref='author', lazy=True)
 
     def get_reset_token(self, expires_sec=1800):
-        serializer = Serializer(app.config['SECRET_KEY'], expires_sec)
+        serializer = Serializer(current_app.config['SECRET_KEY'], expires_sec)
         return serializer.dumps({'user_id': self.id}).decode('utf-8')
 
     @staticmethod
     def verify_reset_token(token):
-        serializer = Serializer(app.config['SECRET_KEY'])
+        serializer = Serializer(current_app.config['SECRET_KEY'])
         try:
             user_id = serializer.loads(token)['user_id']
         except:
@@ -32,14 +32,3 @@ class User(db.Model, UserMixin):
 
     def __repr__(self):
         return f"User('{self.username}', '{self.email}')"
-
-
-class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    title = db.Column(db.String(100), nullable=False)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    content = db.Column(db.Text, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-
-    def __repr__(self):
-        return f"Post('{self.title}', '{self.date_posted}')"
